@@ -193,7 +193,7 @@ def prepare(df, target):
         col = df[c]
         if col.dtype.kind in "iu" and col.is_unique and ("id" in c.lower() or col.is_monotonic_increasing):
             df = df.drop(columns=c)                       # row id
-        elif col.dtype == object and col.nunique() > 25:
+        elif not pd.api.types.is_numeric_dtype(col) and col.nunique() > 25:
             first = col.astype(str).str.split().str[0].str.lower()
             if first.nunique() <= 30:
                 df[c] = first                              # e.g. car name -> brand
@@ -429,7 +429,7 @@ def classification_page():
                             "Upload a table with numeric measurements and one label column, such as species or class.")
     if raw_df is None:
         return
-    cand = [c for c in raw_df.columns if raw_df[c].dtype == object or raw_df[c].nunique() <= 10]
+    cand = [c for c in raw_df.columns if not pd.api.types.is_numeric_dtype(raw_df[c]) or raw_df[c].nunique() <= 10]
     if not cand:
         st.error("No label column found. A label column has text values or only a few distinct values.")
         return
