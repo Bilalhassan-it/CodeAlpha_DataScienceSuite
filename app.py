@@ -26,9 +26,10 @@ from sklearn.preprocessing import StandardScaler
 # Theme
 # ----------------------------------------------------------------------------
 NAVY, ICE = "#0F3460", "#EEF2FF"
-AMBER, TEAL, GREY = "#D98E04", "#2A9D8F", "#B9C2D6"
+AMBER, TEAL, GREY = "#D98E04", "#1F9E89", "#C5D3EA"
+BLUE, SKY, CORAL = "#2E6BB0", "#7FB2E5", "#E4572E"
 SEQ = [[0, "#EEF2FF"], [0.5, "#7C9BD0"], [1, NAVY]]          # one hue, light -> dark
-DIV = [[0, AMBER], [0.5, "#FFFFFF"], [1, NAVY]]               # two hues, neutral middle
+DIV = [[0, CORAL], [0.5, "#FFFFFF"], [1, BLUE]]               # two hues, neutral middle
 DATA = Path(__file__).parent / "data"
 LOCKDOWN = pd.Timestamp("2020-03-25")
 
@@ -303,7 +304,7 @@ def regression_page(title, sub, sample_fn, sample_name, default_target, key, hin
     # ---- Explore
     with t_eda:
         a, b = st.columns(2)
-        h = px.histogram(df, x=target, nbins=30, color_discrete_sequence=[NAVY], title=f"Distribution of {target}")
+        h = px.histogram(df, x=target, nbins=30, color_discrete_sequence=[BLUE], title=f"Distribution of {target}")
         h.update_traces(marker_line_color="#fff", marker_line_width=1)
         with a:
             show(h, legend=False)
@@ -311,12 +312,12 @@ def regression_page(title, sub, sample_fn, sample_name, default_target, key, hin
         if num_f:
             corr = df[num_f + [target]].corr()[target].drop(target).sort_values(key=abs, ascending=False)
             cb = go.Figure(go.Bar(x=corr.values[::-1], y=corr.index[::-1], orientation="h",
-                                  marker_color=[NAVY if v >= 0 else AMBER for v in corr.values[::-1]]))
+                                  marker_color=[TEAL if v >= 0 else CORAL for v in corr.values[::-1]]))
             cb.update_layout(title=f"What moves with {target}? (correlation)")
             with b:
                 show(cb, legend=False)
             x_col = st.selectbox("Look closer: plot one feature against the target", num_f, key=key + "_x")
-            sc = px.scatter(df, x=x_col, y=target, opacity=.7, color_discrete_sequence=[NAVY],
+            sc = px.scatter(df, x=x_col, y=target, opacity=.7, color_discrete_sequence=[BLUE],
                             title=f"{target} vs {x_col}")
             if df[x_col].nunique() > 1:
                 m, c0 = np.polyfit(df[x_col], df[target], 1)
@@ -334,7 +335,7 @@ def regression_page(title, sub, sample_fn, sample_name, default_target, key, hin
             cc = st.selectbox("Compare the target across a category", cats, key=key + "_c")
             order = df.groupby(cc)[target].median().sort_values(ascending=False).index[:15]
             bx = px.box(df[df[cc].isin(order)], x=cc, y=target, category_orders={cc: list(order)},
-                        color_discrete_sequence=[NAVY], title=f"{target} by {cc}")
+                        color_discrete_sequence=[BLUE], title=f"{target} by {cc}")
             show(bx, h=420, legend=False)
 
     # ---- Models
@@ -351,7 +352,7 @@ def regression_page(title, sub, sample_fn, sample_name, default_target, key, hin
         m[3].metric("RMSE", f"{r['RMSE']:,.2f}")
         a, b = st.columns(2)
         cmp_ = go.Figure(go.Bar(x=res.index, y=res["CV R² (5-fold)"],
-                                marker_color=[NAVY if i == best else GREY for i in res.index],
+                                marker_color=[BLUE if i == best else GREY for i in res.index],
                                 text=res["CV R² (5-fold)"].round(3), textposition="outside"))
         cmp_.update_layout(title="Model comparison (cross-validated R², higher is better)")
         cmp_.update_yaxes(range=[min(0, res["CV R² (5-fold)"].min() - .05), 1.05])
@@ -359,7 +360,7 @@ def regression_page(title, sub, sample_fn, sample_name, default_target, key, hin
             show(cmp_, legend=False)
         ap = go.Figure()
         ap.add_trace(go.Scatter(x=yte, y=preds[best], mode="markers", name="Test rows",
-                                marker=dict(color=NAVY, size=8, opacity=.7)))
+                                marker=dict(color=BLUE, size=9, opacity=.75, line=dict(color="#fff", width=1))))
         lo, hi = float(min(yte.min(), preds[best].min())), float(max(yte.max(), preds[best].max()))
         ap.add_trace(go.Scatter(x=[lo, hi], y=[lo, hi], mode="lines", name="Perfect prediction",
                                 line=dict(color=AMBER, dash="dash", width=2)))
@@ -368,14 +369,15 @@ def regression_page(title, sub, sample_fn, sample_name, default_target, key, hin
             show(ap)
         a, b = st.columns(2)
         resid = yte.values - preds[best]
-        rh = px.histogram(x=resid, nbins=25, color_discrete_sequence=[NAVY],
+        rh = px.histogram(x=resid, nbins=25, color_discrete_sequence=[TEAL],
                           title="Prediction errors (centred on 0 is good)", labels={"x": "Actual − predicted"})
         rh.update_traces(marker_line_color="#fff", marker_line_width=1)
         with a:
             show(rh, legend=False)
         tree = models["Random Forest"]
         imp = pd.Series(tree.feature_importances_, index=X.columns).sort_values().tail(10)
-        ib = go.Figure(go.Bar(x=imp.values, y=imp.index, orientation="h", marker_color=NAVY))
+        ib = go.Figure(go.Bar(x=imp.values, y=imp.index, orientation="h",
+                              marker=dict(color=imp.values, colorscale=[[0, SKY], [1, NAVY]])))
         ib.update_layout(title="Top 10 drivers (Random Forest importance)")
         with b:
             show(ib, legend=False)
@@ -447,7 +449,7 @@ def classification_page():
     with t_data:
         counts = y.value_counts().reset_index()
         counts.columns = [target, "rows"]
-        cb = px.bar(counts, x=target, y="rows", color_discrete_sequence=[NAVY], text="rows",
+        cb = px.bar(counts, x=target, y="rows", color_discrete_sequence=[BLUE], text="rows",
                     title="How many rows per class (balanced is easier)")
         show(cb, h=300, legend=False)
         st.dataframe(df.head(100), width="stretch")
@@ -458,14 +460,14 @@ def classification_page():
             a, b = st.columns(2)
             x1 = a.selectbox("X axis", num_f, index=0, key="iris_x")
             y1 = b.selectbox("Y axis", num_f, index=1, key="iris_y")
-            pal = [NAVY, AMBER, TEAL, "#8D99AE", "#C8553D", "#6C5B7B"]
+            pal = [BLUE, AMBER, TEAL, CORAL, "#6C5B7B", "#8D99AE"]
             sc = px.scatter(df, x=x1, y=y1, color=target, color_discrete_sequence=pal,
                             title=f"{y1} vs {x1}")
             sc.update_traces(marker=dict(size=10, line=dict(color="#fff", width=1.5)))
             show(sc, h=430)
         if num_f:
             f1 = st.selectbox("Compare one measurement across classes", num_f, key="iris_box")
-            show(px.box(df, x=target, y=f1, color=target, color_discrete_sequence=[NAVY, AMBER, TEAL, "#8D99AE"],
+            show(px.box(df, x=target, y=f1, color=target, color_discrete_sequence=[BLUE, AMBER, TEAL, CORAL],
                         title=f"{f1} by class"), h=380, legend=False)
             cm = df[num_f].corr().round(2)
             show(px.imshow(cm, text_auto=True, color_continuous_scale=DIV, zmin=-1, zmax=1,
@@ -490,7 +492,7 @@ def classification_page():
             show(px.imshow(cmx, x=labels, y=labels, text_auto=True, color_continuous_scale=SEQ,
                            labels=dict(x="Predicted", y="Actual", color="Rows"), title="Confusion matrix"), h=380)
         cmp_ = go.Figure(go.Bar(x=res.index, y=res["CV accuracy (5-fold)"],
-                                marker_color=[NAVY if i == choice else GREY for i in res.index],
+                                marker_color=[BLUE if i == choice else GREY for i in res.index],
                                 text=(res["CV accuracy (5-fold)"] * 100).round(1).astype(str) + "%",
                                 textposition="outside"))
         cmp_.update_layout(title="Model comparison (cross-validated accuracy)")
@@ -502,7 +504,8 @@ def classification_page():
         st.dataframe(rep, width="stretch")
         if choice == "Random Forest":
             imp = pd.Series(models[choice].feature_importances_, index=X.columns).sort_values().tail(10)
-            ib = go.Figure(go.Bar(x=imp.values, y=imp.index, orientation="h", marker_color=NAVY))
+            ib = go.Figure(go.Bar(x=imp.values, y=imp.index, orientation="h",
+                              marker=dict(color=imp.values, colorscale=[[0, SKY], [1, NAVY]])))
             ib.update_layout(title="Which measurements matter most")
             show(ib, h=340, legend=False)
         st.download_button("⬇ Download model comparison (CSV)", res.round(4).to_csv().encode(),
@@ -519,7 +522,7 @@ def classification_page():
         if hasattr(mdl, "predict_proba"):
             pr = pd.Series(mdl.predict_proba(x_new)[0], index=mdl.classes_)
             pb = go.Figure(go.Bar(x=pr.values, y=pr.index, orientation="h",
-                                  marker_color=[NAVY if i == label else GREY for i in pr.index],
+                                  marker_color=[BLUE if i == label else GREY for i in pr.index],
                                   text=(pr * 100).round(1).astype(str) + "%", textposition="outside"))
             pb.update_layout(title="Confidence per class")
             pb.update_xaxes(range=[0, 1.15], tickformat=".0%")
@@ -602,7 +605,7 @@ def unemployment_page():
         fg.add_trace(go.Scatter(x=nat[dc], y=nat[rc], name="Monthly average", mode="lines",
                                 line=dict(color=GREY, width=2)))
         fg.add_trace(go.Scatter(x=nat[dc], y=nat["3-month average"], name="3-month average", mode="lines",
-                                line=dict(color=NAVY, width=4), fill="tozeroy", fillcolor="rgba(15,52,96,.08)"))
+                                line=dict(color=BLUE, width=4), fill="tozeroy", fillcolor="rgba(46,107,176,.10)"))
         if nat[dc].min() < ev < nat[dc].max():
             fg.add_vline(x=ev.timestamp() * 1000, line_dash="dash", line_color=AMBER)
             fg.add_annotation(x=ev, y=1, yref="paper", text="Event date", showarrow=False,
@@ -615,14 +618,14 @@ def unemployment_page():
         fg = go.Figure()
         for r_, g in df.groupby(region):
             fg.add_trace(go.Scatter(x=g[dc], y=g[rc], mode="lines", name=r_, showlegend=(r_ == focus),
-                                    line=dict(color=NAVY if r_ == focus else "#D3DAEA", width=4 if r_ == focus else 1.5),
+                                    line=dict(color=CORAL if r_ == focus else "#C9D6EE", width=4.5 if r_ == focus else 1.6),
                                     hovertemplate=f"{r_}<br>%{{x|%b %Y}}: %{{y:.1f}}%<extra></extra>"))
-        fg.update_layout(title=f"{focus} (dark) against every other region (light)", yaxis_title="Rate (%)")
+        fg.update_layout(title=f"{focus} (highlighted) against every other region (light)", yaxis_title="Rate (%)")
         show(fg, h=420)
         a, b = st.columns(2)
         mo = df.assign(Month=df[dc].dt.month).groupby("Month")[rc].mean().reset_index()
         mo["Name"] = pd.to_datetime(mo.Month, format="%m").dt.strftime("%b")
-        mb = px.bar(mo, x="Name", y=rc, color_discrete_sequence=[NAVY], title="Seasonality: average rate by calendar month")
+        mb = px.bar(mo, x="Name", y=rc, color_discrete_sequence=[BLUE], title="Seasonality: average rate by calendar month")
         mb.update_layout(yaxis_title="Rate (%)", xaxis_title="")
         with a:
             show(mb, legend=False)
@@ -634,18 +637,18 @@ def unemployment_page():
     with t3:
         a, b = st.columns(2)
         rb = go.Figure(go.Bar(x=reg_avg.values[::-1], y=reg_avg.index[::-1], orientation="h",
-                              marker_color=[AMBER if i == 0 else NAVY for i in range(len(reg_avg))][::-1],
+                              marker_color=[CORAL if i == 0 else BLUE for i in range(len(reg_avg))][::-1],
                               text=reg_avg.round(1).values[::-1], textposition="outside"))
-        rb.update_layout(title="Average rate by region (highest in amber)")
+        rb.update_layout(title="Average rate by region (highest in coral)")
         with a:
             show(rb, h=max(340, 34 * len(reg_avg) + 90), legend=False)
         vol = df.groupby(region)[rc].std().sort_values(ascending=False).dropna()
-        vb = go.Figure(go.Bar(x=vol.values[::-1], y=vol.index[::-1], orientation="h", marker_color=TEAL,
+        vb = go.Figure(go.Bar(x=vol.values[::-1], y=vol.index[::-1], orientation="h", marker_color=SKY,
                               text=vol.round(1).values[::-1], textposition="outside"))
         vb.update_layout(title="How unstable the rate was (standard deviation)")
         with b:
             show(vb, h=max(340, 34 * len(vol) + 90), legend=False)
-        show(px.box(df, x=region, y=rc, color_discrete_sequence=[NAVY], title="Spread of the rate per region"),
+        show(px.box(df, x=region, y=rc, color_discrete_sequence=[BLUE], title="Spread of the rate per region"),
              h=420, legend=False)
 
     with t4:
@@ -653,15 +656,15 @@ def unemployment_page():
         if {"Before", "After"} <= set(ba.columns):
             ba = ba.dropna().sort_values("After", ascending=False)
             gb = go.Figure()
-            gb.add_trace(go.Bar(x=ba.index, y=ba["Before"], name="Before", marker_color=NAVY))
-            gb.add_trace(go.Bar(x=ba.index, y=ba["After"], name="After", marker_color=AMBER))
+            gb.add_trace(go.Bar(x=ba.index, y=ba["Before"], name="Before", marker_color=SKY))
+            gb.add_trace(go.Bar(x=ba.index, y=ba["After"], name="After", marker_color=NAVY))
             gb.update_layout(barmode="group", title="Average rate before vs after the chosen date", yaxis_title="Rate (%)")
             show(gb, h=420)
             chg = (ba["After"] - ba["Before"]).sort_values()
             cb = go.Figure(go.Bar(x=chg.values, y=chg.index, orientation="h",
-                                  marker_color=[TEAL if v < 0 else AMBER for v in chg.values],
+                                  marker_color=[TEAL if v < 0 else CORAL for v in chg.values],
                                   text=[f"{v:+.1f}" for v in chg.values], textposition="outside"))
-            cb.update_layout(title="Change in percentage points (amber = worse, teal = better)")
+            cb.update_layout(title="Change in percentage points (coral = worse, teal = better)")
             show(cb, h=max(340, 34 * len(chg) + 90), legend=False)
         else:
             st.info("The selected period only has data on one side of the chosen date. Widen the period "
