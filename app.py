@@ -49,7 +49,7 @@ h1,h2,h3,h4,h5,p,li,label,span,div {{color:inherit;}}
 .hero h1 {{color:{ICE}; margin:0; font-size:1.9rem;}}
 .hero p {{color:#C9D6F5; margin:6px 0 0 0; font-size:1rem;}}
 .card {{background:#fff; border-radius:14px; padding:18px 20px; box-shadow:0 1px 8px #0f34601f;
-        border-top:4px solid {NAVY}; height:100%;}}
+        border-top:4px solid {NAVY}; min-height:150px;}}
 .card h4 {{margin:0 0 6px 0; font-size:1.05rem;}}
 .card p {{margin:0; font-size:.92rem; color:#41506b;}}
 .step {{background:#fff; border-radius:12px; padding:12px 14px; border-left:5px solid {AMBER};
@@ -425,7 +425,7 @@ def classification_page():
     hero("Iris Flower Classification", "Task 1 · Teach a model to recognise a category from measurements. "
          "Works with the Iris sample or any CSV that has a label column.")
     steps("Pick sample or upload", "Explore the classes", "Train and compare models", "Classify a new case")
-    raw_df, name = get_data("iris", sample_iris, "Iris (built-in sample)",
+    raw_df, name = get_data("iris", sample_iris, "Iris sample",
                             "Upload a table with numeric measurements and one label column, such as species or class.")
     if raw_df is None:
         return
@@ -545,7 +545,7 @@ def unemployment_page():
     hero("Unemployment Analysis", "Task 2 · See how the unemployment rate moved over time, which regions were hit "
          "hardest, and what changed after the Covid-19 lockdown.")
     steps("Pick sample or upload", "Check column mapping", "Explore trends and regions", "Read the insights")
-    raw, name = get_data("unemp", sample_unemployment, "India-style sample (synthetic)",
+    raw, name = get_data("unemp", sample_unemployment, "Synthetic sample",
                          "Needs a date column and a numeric unemployment-rate column. A region/state column is optional.")
     if raw is None:
         return
@@ -755,9 +755,9 @@ elif page == PAGES[2]:
     unemployment_page()
 elif page == PAGES[3]:
     regression_page("Car Price Prediction", "Task 3 · Predict a car's selling price and learn what drives it.",
-                    sample_cars, "CarPrice (public sample)", "price", "car",
+                    sample_cars, "Car price sample", "price", "car",
                     "Upload a car table with a numeric price column (and features such as engine size, weight, brand).")
 else:
     regression_page("Sales Prediction", "Task 4 · See how advertising spend turns into sales.",
-                    sample_sales, "Advertising (public sample)", "Sales", "sales",
+                    sample_sales, "Advertising sample", "Sales", "sales",
                     "Upload a table with advertising spend columns (TV, Radio, Newspaper...) and a sales column.")
