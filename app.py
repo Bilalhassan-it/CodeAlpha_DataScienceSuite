@@ -81,10 +81,10 @@ def iris_page():
     m[2].metric("5-fold CV accuracy", f"{cross_val_score(mdl, X, y, cv=5).mean():.1%}")
     labels = sorted(y.unique()); a, b = st.columns(2)
     a.plotly_chart(style(px.imshow(confusion_matrix(yte, p, labels=labels), x=labels, y=labels, text_auto=True,
-                   color_continuous_scale=[ICE, NAVY], labels=dict(x="Predicted", y="Actual"), title="Confusion matrix")), use_container_width=True)
+                   color_continuous_scale=[ICE, NAVY], labels=dict(x="Predicted", y="Actual"), title="Confusion matrix")), width="stretch")
     b.subheader("Classification report")
-    b.dataframe(pd.DataFrame(classification_report(yte, p, output_dict=True)).T.round(2), use_container_width=True)
-    st.plotly_chart(style(px.scatter_matrix(df, dimensions=d.feature_names, color="species", title="Feature relationships")), use_container_width=True)
+    b.dataframe(pd.DataFrame(classification_report(yte, p, output_dict=True)).T.round(2), width="stretch")
+    st.plotly_chart(style(px.scatter_matrix(df, dimensions=d.feature_names, color="species", title="Feature relationships")), width="stretch")
     st.subheader("Live species predictor")
     cols = st.columns(4); v = [cols[i].slider(f, float(X[f].min()), float(X[f].max()), float(X[f].median())) for i, f in enumerate(d.feature_names)]
     st.success(f"Predicted species: **{mdl.predict(pd.DataFrame([v], columns=d.feature_names))[0]}**")
@@ -97,7 +97,8 @@ def unemployment_page():
     dc, rc, gc = find("date"), find("unemployment", "rate"), find("region") or find("state")
     if not (dc and rc):
         st.error("CSV needs a date column and an 'Unemployment Rate' column."); return
-    df[dc] = pd.to_datetime(df[dc].astype(str).str.strip(), dayfirst=True, errors="coerce")
+    ds = df[dc].astype(str).str.strip()
+    df[dc] = pd.to_datetime(ds, errors="coerce") if ds.str.match(r"^\d{4}-").all() else pd.to_datetime(ds, dayfirst=True, errors="coerce")
     df = df.dropna(subset=[dc, rc]).sort_values(dc)
     if gc:
         sel = st.multiselect("Regions", sorted(df[gc].unique()), default=sorted(df[gc].unique())[:6]); df = df[df[gc].isin(sel)]
@@ -109,15 +110,15 @@ def unemployment_page():
     m[3].metric("Peak", f"{pk[rc]:.1f}%", pk[dc].strftime("%b %Y"), delta_color="off")
     f = px.line(df, x=dc, y=rc, color=gc, title="Unemployment rate over time (dashed line = national lockdown, 25 Mar 2020)")
     f.add_vline(x=cut.timestamp() * 1000, line_dash="dash", line_color=NAVY)
-    st.plotly_chart(style(f), use_container_width=True)
+    st.plotly_chart(style(f), width="stretch")
     a, b = st.columns(2)
     df["Period"] = np.where(df[dc] < cut, "Pre-Covid", "Covid era")
     if gc:
         a.plotly_chart(style(px.bar(df.groupby([gc, "Period"])[rc].mean().reset_index(), x=gc, y=rc, color="Period", barmode="group",
-                       title="Average rate by region")), use_container_width=True)
+                       title="Average rate by region")), width="stretch")
     seas = df.assign(Month=df[dc].dt.month_name().str[:3]).groupby("Month")[rc].mean().reindex(
         ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]).dropna().reset_index()
-    b.plotly_chart(style(px.bar(seas, x="Month", y=rc, title="Seasonal pattern (average by month)")), use_container_width=True)
+    b.plotly_chart(style(px.bar(seas, x="Month", y=rc, title="Seasonal pattern (average by month)")), width="stretch")
     st.subheader("Key insights")
     st.markdown(f"- Unemployment averaged **{pre:.1f}%** before lockdown and **{post:.1f}%** afterwards ({post - pre:+.1f} points).\n"
                 f"- The peak of **{pk[rc]:.1f}%** occurred in **{pk[dc].strftime('%B %Y')}**.\n"
@@ -149,12 +150,12 @@ def regression_page(title, sub, df, default, key):
     a, b = st.columns(2)
     f = px.scatter(x=yte, y=pred[best], labels=dict(x="Actual", y="Predicted"), title=f"Actual vs predicted ({best})")
     f.add_shape(type="line", x0=yte.min(), y0=yte.min(), x1=yte.max(), y1=yte.max(), line=dict(color=NAVY, dash="dash"))
-    a.plotly_chart(style(f), use_container_width=True)
+    a.plotly_chart(style(f), width="stretch")
     imp = pd.Series(models["Random Forest"].feature_importances_, index=X.columns).sort_values().tail(10)
-    b.plotly_chart(style(px.bar(imp, orientation="h", title="Top drivers (Random Forest importance)", labels=dict(value="Importance", index=""))), use_container_width=True)
+    b.plotly_chart(style(px.bar(imp, orientation="h", title="Top drivers (Random Forest importance)", labels=dict(value="Importance", index=""))), width="stretch")
     coef = pd.Series(models["Linear Regression"][-1].coef_ / Xtr.std().values, index=X.columns).round(4)
     with st.expander("Impact per unit change (linear model coefficients)"):
-        st.dataframe(coef.rename("Change in target per +1 unit"), use_container_width=True)
+        st.dataframe(coef.rename("Change in target per +1 unit"), width="stretch")
     st.subheader("Live prediction")
     with st.form(key + "f"):
         vals, cols = {}, st.columns(3)
