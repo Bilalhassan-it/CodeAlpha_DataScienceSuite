@@ -13,6 +13,12 @@ An interactive analytics dashboard that brings four data science projects togeth
 
 ---
 
+## Demo video
+
+▶ [Watch the 2-minute demo](demo/CodeAlpha_Dashboard_Demo.mp4) · 🔗 [Live app](https://codealpha-datascience.streamlit.app/)
+
+---
+
 ## 1. About the Project
 
 Instead of four separate notebooks, this project turns each internship task into a working tool. You can pick a model, change settings, upload your own data, see the results as charts and metrics, and make live predictions, all from the browser with no code changes.
