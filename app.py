@@ -699,7 +699,7 @@ PAGES = ["🏠 Overview", "🌸 Task 1 · Iris", "📉 Task 2 · Unemployment", 
 
 
 def go_to(p):
-    st.session_state["nav"] = p
+    st.session_state["_goto"] = p
 
 
 def overview():
@@ -712,7 +712,9 @@ def overview():
     cols = st.columns(4)
     for c, (t, d, p) in zip(cols, cards):
         c.markdown(f'<div class="card"><h4>{t}</h4><p>{d}</p></div>', unsafe_allow_html=True)
-        c.button("Open", key="open_" + p, on_click=go_to, args=(p,), width="stretch")
+        if c.button("Open", key="open_" + p, width="stretch"):
+            go_to(p)
+            st.rerun()
     st.write("")
     st.subheader("How to use it")
     steps("Open a page from the left menu", "Choose the sample data or upload your CSV / Excel file",
@@ -736,6 +738,9 @@ def overview():
                    "and a clearly labelled synthetic unemployment sample.")
 
 
+# Jump requested by an "Open" button: apply it before the menu widget is created.
+if "_goto" in st.session_state:
+    st.session_state["nav"] = st.session_state.pop("_goto")
 st.sidebar.markdown("## 📊 CodeAlpha\n**Data Science Suite**")
 st.sidebar.divider()
 page = st.sidebar.radio("Go to", PAGES, key="nav", label_visibility="collapsed")
