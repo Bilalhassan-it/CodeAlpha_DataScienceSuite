@@ -39,7 +39,19 @@ Instead of four separate notebooks, this project turns each internship task into
 
 ---
 
-## 3. Features
+## 3. What's new in this version
+
+- Every page has **tabs** (Data, Explore, Models, Predict, Insights) and a 4-step guide, so it is easy to follow.
+- Choose the **sample dataset or upload your own CSV / Excel file** on every page, including Iris.
+- Proper charts: distributions, correlation bars and heatmaps, scatter with trend line, box plots, confusion matrix, actual-vs-predicted, error histogram, feature importance, seasonality and region heatmaps.
+- **Three models compared** with shuffled 5-fold cross-validation; the best one is picked for you.
+- **Column mapping** for the unemployment page, so different file layouts still work.
+- Plain-language **insights** and downloadable reports.
+- Tested with real public files (CarPrice, Advertising) uploaded through the browser.
+
+---
+
+## 3b. Features
 
 ### Task 1: Iris Flower Classification
 - Choose between **Random Forest**, **K-Nearest Neighbors** and **Logistic Regression**.
@@ -118,6 +130,7 @@ If your file uses very different column names, rename them in the CSV or adjust 
 CodeAlpha_DataScienceSuite/
 ├── app.py              # The full dashboard (all four tasks)
 ├── requirements.txt    # Python dependencies
+├── data/               # Real sample datasets (car prices, advertising sales)
 ├── .streamlit/
 │   └── config.toml     # Navy / ice theme
 ├── projects/
