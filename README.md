@@ -1,4 +1,11 @@
-# CodeAlpha Data Science Suite
+<h1 align="center">CodeAlpha Data Science Suite</h1>
+<p align="center"><b>CodeAlpha Data Science Internship · October 2026</b></p>
+<p align="center">
+<img src="https://img.shields.io/badge/CodeAlpha-Data%20Science%20Intern-0F3460" alt="CodeAlpha">
+<img src="https://img.shields.io/badge/Python-3.10%2B-0F3460" alt="Python">
+<img src="https://img.shields.io/badge/Streamlit-Dashboard-0F3460" alt="Streamlit">
+<img src="https://img.shields.io/badge/License-MIT-0F3460" alt="MIT">
+</p>
 
 An interactive analytics dashboard that brings four data science projects together in one professional web app. It was built for the **CodeAlpha Data Science Internship** (October 2026) using Python and Streamlit.
 
@@ -111,6 +118,11 @@ If your file uses very different column names, rename them in the CSV or adjust 
 CodeAlpha_DataScienceSuite/
 ├── app.py              # The full dashboard (all four tasks)
 ├── requirements.txt    # Python dependencies
+├── .streamlit/
+│   └── config.toml     # Navy / ice theme
+├── projects/
+│   └── insighthub/     # Separate Java + Python analytics project
+├── LICENSE             # MIT
 └── README.md           # This file
 ```
 
